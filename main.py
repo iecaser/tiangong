@@ -1,5 +1,5 @@
 import numpy as np
-from src import utils, models, loaders
+from common_blocks import utils, models, loaders
 import os
 from torch import optim, nn
 import copy
@@ -117,7 +117,7 @@ model = models.resnet101(
 # train & fine tune
 update_layers = [model.fc, model.layer4,
                  model.layer3, model.layer2, model.layer1]
-lrs = [1e-3, 1e-4, 1e-4, 1e-5, 1e-5]
+lrs = [1e-3, 1e-4, 1e-4, 1e-5, 1e-6]
 for layer, lr in zip(update_layers, lrs):
     model = train(
         model=model,

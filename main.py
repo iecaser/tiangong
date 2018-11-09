@@ -8,8 +8,8 @@ import torch
 # global param
 data_path = './data/input/'
 output_path = './data/output/'
-model_save_path = os.path.join(output_path, 'cache/model.pth')
-BATCH_SIZE = 128
+model_save_path = os.path.join(output_path, 'cache/resnet152.pth')
+BATCH_SIZE = 16
 EPOCHS = 99999
 DEVICE = torch.device('cuda:0')
 logger = utils.get_logger('tiangong')
@@ -99,7 +99,6 @@ def predict(model, dataloader):
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
             print(predicted)
-            __import__('ipdb').set_trace()
             pass
 
 

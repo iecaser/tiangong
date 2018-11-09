@@ -7,7 +7,7 @@ from common_blocks import utils
 
 def resnet101(num_classes=6, model_save_path=None):
     logger = utils.get_logger('tiangong')
-    model = torchvision.models.resnet101(pretrained=True)
+    model = torchvision.models.resnet152(pretrained=True)
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     if model_save_path is not None and os.path.exists(model_save_path):
         logger.info('using cached model weights.')

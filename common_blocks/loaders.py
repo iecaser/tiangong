@@ -53,6 +53,29 @@ class Metadata:
         return self.encoder.inverse_transform(labels_test)
 
 
+def get_fulldataloader(metadata, batch_size=128):
+    dataloader = DataLoader(
+        TiangongDataset(
+            images=np.r_[metadata.data.images_train, metadata.data.images_val],
+            labels=np.r_[metadata.data.labels_train, metadata.data.labels_val],
+            transforms=transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomVerticalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225],
+                ),
+            ]),
+        ),
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=2,
+    )
+    return dataloader
+
+
 def get_dataloader(metadata, batch_size=128):
     # train data
     dataloader_train = DataLoader(

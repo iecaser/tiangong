@@ -7,6 +7,7 @@ from sklearn.preprocessing import LabelEncoder
 from attrdict import AttrDict
 import os
 from sklearn.model_selection import train_test_split
+import numpy as np
 
 
 class TiangongDataset(Dataset):
@@ -20,10 +21,7 @@ class TiangongDataset(Dataset):
 
     def __getitem__(self, idx):
         image = Image.open(self.images[idx])
-        if self.labels is not None:
-            label = self.labels[idx]
-        else:
-            label = None
+        label = self.labels[idx]
         image = self.transforms(image)
         return image, label
 
@@ -48,7 +46,7 @@ class Metadata:
             'labels_train': labels_train,
             'labels_val': labels_val,
             'images_test': images_test,
-            'labels_test': None,
+            'labels_test': np.ones(len(images_test), dtype='int64'),
         })
 
     def decode(self, labels_test):
@@ -92,7 +90,7 @@ def get_dataloader(metadata, batch_size=128):
             ]),
         ),
         batch_size=batch_size,
-        shuffle=True,
+        shuffle=False,
         num_workers=2,
     )
 # test data
@@ -101,7 +99,7 @@ def get_dataloader(metadata, batch_size=128):
             images=metadata.data.images_test,
             labels=metadata.data.labels_test,
             transforms=transforms.Compose([
-                transforms.Resize(224),
+                transforms.Resize((224, 224)),
                 transforms.ToTensor(),
                 transforms.Normalize(
                     mean=[0.485, 0.456, 0.406],
@@ -109,7 +107,7 @@ def get_dataloader(metadata, batch_size=128):
                 ),
             ]),
         ),
-        batch_size=1,
+        batch_size=batch_size,
         shuffle=False,
         num_workers=2,
     )

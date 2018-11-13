@@ -6,6 +6,7 @@ import copy
 import torch
 import pandas as pd
 
+
 # global param
 data_path = './data/input/'
 output_path = './data/output/'
@@ -13,7 +14,7 @@ model_save_path = os.path.join(output_path, 'cache/resnet152.pth')
 BATCH_SIZE = 16
 DEVICE = torch.device('cuda:0')
 logger = utils.get_logger('tiangong')
-EPOCHS = 99999
+EPOCHS = 999999
 
 
 def train(model, dataloader, loss_fn, optimizer):
@@ -66,9 +67,9 @@ def train_predict_eval(model, dataloaders, loss_fn, update_layer, train_on_val=F
                                              optimizer=optimizer)
         # eval
         if not train_on_val:
-            epoch_loss_val, epoch_acc_val = predict_eval(model=model,
-                                                         dataloader=dataloader_val,
-                                                         loss_fn=loss_fn)
+            epoch_loss_val, epoch_acc_val, label_val = predict_eval(model=model,
+                                                                    dataloader=dataloader_val,
+                                                                    loss_fn=loss_fn)
             if epoch_acc_val > best_acc:
                 patience = 0
                 best_acc = epoch_acc_val
@@ -138,7 +139,7 @@ model = models.resnet101(num_classes=len(metadata.encoder.classes_),
 loss_fn = nn.CrossEntropyLoss()
 
 # train & fine tune
-rounds = 0
+rounds = 1
 for i in range(rounds):
     print('*'*100)
     print('*'*100)
@@ -148,12 +149,14 @@ for i in range(rounds):
                      model.layer3, model.layer2, model.layer1]
     lrs = [1e-3, 1e-4, 1e-4, 1e-5, 1e-6]
     for layer, lr in zip(update_layers, lrs):
-        model = train(model=model,
-                      dataloaders=(dataloader_train, dataloader_val),
-                      update_layer=layer,
-                      train_on_val=False,
-                      lr=lr,
-                      epochs=EPOCHS)
+        model = train_predict_eval(model=model,
+                                   dataloaders=(dataloader_train,
+                                                dataloader_val),
+                                   loss_fn=loss_fn,
+                                   update_layer=layer,
+                                   train_on_val=False,
+                                   lr=lr,
+                                   epochs=EPOCHS)
         # logger.info('fine tune on {}'.format(layer.__str__()))
         print('=' * 100)
 
@@ -170,14 +173,14 @@ for epoch in range(15):
                              dataloader=dataloader_val,
                              loss_fn=loss_fn,
                              optimizer=optim.Adam(model.parameters(), lr=1e-5))
+    logger.info('final-val-epoch:{},  loss:{},  acc:{}'.format(epoch, loss, acc))
 
 for epoch in range(200):
     model, loss, acc = train(model=model,
                              dataloader=dataloader_full,
                              loss_fn=loss_fn,
                              optimizer=optim.Adam(model.parameters(), lr=1e-6))
-    logger.info(
-        'epoch:{}, final-val loss:{}, final-val acc:{}'.format(epoch, loss, acc))
+    logger.info('final-full-epoch:{},  loss:{}, acc:{}'.format(epoch, loss, acc))
     # predict
     if epoch % 20 == 19:
         make_submission(model, dataloader_test, epoch)

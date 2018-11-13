@@ -37,8 +37,8 @@ class Metadata:
             train_data.image.values, train_data.label.values, random_state=12345, test_size=0.3)
 
         test_data = pd.DataFrame(os.listdir(
-            os.path.join(data_path, 'test')), columns=['image'])
-        test_data.image = data_path + 'test/' + test_data.image
+            os.path.join(data_path, 'testB')), columns=['image'])
+        test_data.image = data_path + 'testB/' + test_data.image
         images_test = test_data.image.values
         self.data = AttrDict({
             'images_train': images_train,
